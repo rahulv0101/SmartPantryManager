@@ -2,7 +2,7 @@
     <string name="app_name">Smart Pantry Manager</string>
     <string name="pantry_title">Smart Pantry Manager</string>
     <string name="my_pantry">My Pantry</string>
-    <string name="empty_pantry_message">Your pantry is empty. Add an ingredient to get started.</string>
+    <string name="empty_pantry_message">Your pantry is empty. Add your first ingredient to get started.</string>
     <string name="add_ingredient">Add Ingredient</string>
     <string name="suggested_recipes">Suggested Recipes</string>
     <string name="settings">Settings</string>
@@ -10,9 +10,15 @@
     <string name="quantity">Quantity</string>
     <string name="unit">Unit</string>
     <string name="expiry_date">Expiry date (optional)</string>
+    <string name="expiry_date_not_set">No expiry date</string>
+    <string name="select_unit">Select unit</string>
+    <string name="name_required_error">Enter an ingredient name.</string>
+    <string name="quantity_required_error">Enter a quantity.</string>
+    <string name="quantity_invalid_error">Enter a positive number, such as 1 or 1.5.</string>
+    <string name="unit_required_error">Select a unit.</string>
+    <string name="expiry_date_invalid_error">Choose a valid expiry date.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
-    <string name="development_save_placeholder">Development placeholder: nothing was saved.</string>
     <string name="empty_recipes_message">There are no suggested recipes yet. Pantry matching will be added in a later milestone.</string>
     <string name="open_recipe_details_placeholder">Open Recipe Details (placeholder)</string>
     <string name="recipe_details">Recipe Details</string>
@@ -25,11 +31,15 @@
     <string name="expiry_alerts_placeholder">Available in a future milestone</string>
     <string name="settings_placeholder_notice">Settings are placeholders until preferences are implemented.</string>
     <string-array name="unit_options">
-        <item>Unit</item>
+        <item>@string/select_unit</item>
         <item>g</item>
         <item>kg</item>
         <item>ml</item>
-        <item>l</item>
+        <item>L</item>
         <item>pieces</item>
     </string-array>
+    <string name="ingredient_saved_message">Ingredient added to your pantry.</string>
+    <string name="ingredient_save_failed_message">The ingredient could not be saved. Please try again.</string>
+    <string name="pantry_quantity_format">Quantity: %1$s %2$s</string>
+    <string name="pantry_expiry_format">Expiry date: %1$s</string>
 </resources>
