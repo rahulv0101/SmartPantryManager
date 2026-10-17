@@ -2,6 +2,7 @@ package com.example.smartpantrymanager;
 
 import android.content.Intent;
 import android.os.Bundle;
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,7 +23,17 @@ public class PantryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pantry);
 
         databaseHelper = new DatabaseHelper(this);
-        pantryAdapter = new PantryAdapter();
+        pantryAdapter = new PantryAdapter(new PantryAdapter.OnItemActionListener() {
+            @Override
+            public void onEdit(PantryItem item) {
+                openEditIngredient(item);
+            }
+
+            @Override
+            public void onDelete(PantryItem item) {
+                confirmDelete(item);
+            }
+        });
         emptyStateTextView = findViewById(R.id.emptyPantryTextView);
         RecyclerView pantryRecyclerView = findViewById(R.id.pantryRecyclerView);
         pantryRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -59,5 +70,38 @@ public class PantryActivity extends AppCompatActivity {
         Intent intent = new Intent(this, destination);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
+    }
+
+    private void openEditIngredient(PantryItem item) {
+        Intent intent = new Intent(this, AddEditIngredientActivity.class);
+        intent.putExtra(AddEditIngredientActivity.EXTRA_PANTRY_ITEM_ID, item.getId());
+        startActivity(intent);
+    }
+
+    private void confirmDelete(PantryItem item) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.confirm_delete_title)
+                .setMessage(getString(R.string.confirm_delete_message, item.getName()))
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.delete, (dialog, which) -> deleteItem(item))
+                .show();
+    }
+
+    private void deleteItem(PantryItem item) {
+        try {
+            int deletedRows = databaseHelper.deletePantryItem(item.getId());
+            if (deletedRows == 1) {
+                loadPantryItems();
+                android.widget.Toast.makeText(this, R.string.ingredient_deleted_message,
+                        android.widget.Toast.LENGTH_SHORT).show();
+            } else {
+                android.widget.Toast.makeText(this, R.string.ingredient_delete_failed_message,
+                        android.widget.Toast.LENGTH_LONG).show();
+                loadPantryItems();
+            }
+        } catch (RuntimeException exception) {
+            android.widget.Toast.makeText(this, R.string.ingredient_delete_failed_message,
+                    android.widget.Toast.LENGTH_LONG).show();
+        }
     }
 }

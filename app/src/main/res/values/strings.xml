@@ -4,6 +4,7 @@
     <string name="my_pantry">My Pantry</string>
     <string name="empty_pantry_message">Your pantry is empty. Add your first ingredient to get started.</string>
     <string name="add_ingredient">Add Ingredient</string>
+    <string name="edit_ingredient">Edit Ingredient</string>
     <string name="suggested_recipes">Suggested Recipes</string>
     <string name="settings">Settings</string>
     <string name="ingredient_name">Ingredient name</string>
@@ -19,6 +20,15 @@
     <string name="expiry_date_invalid_error">Choose a valid expiry date.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="confirm_delete_title">Delete ingredient?</string>
+    <string name="confirm_delete_message">Delete %1$s from your pantry?</string>
+    <string name="ingredient_updated_message">Ingredient updated.</string>
+    <string name="ingredient_deleted_message">Ingredient deleted.</string>
+    <string name="ingredient_update_failed_message">The ingredient could not be updated. Please try again.</string>
+    <string name="ingredient_delete_failed_message">The ingredient could not be deleted. Please try again.</string>
+    <string name="ingredient_not_found_message">That ingredient is no longer available.</string>
     <string name="empty_recipes_message">There are no suggested recipes yet. Pantry matching will be added in a later milestone.</string>
     <string name="open_recipe_details_placeholder">Open Recipe Details (placeholder)</string>
     <string name="recipe_details">Recipe Details</string>

@@ -4,7 +4,7 @@ Smart Pantry Manager is an Android application for reducing household food waste
 
 ## Current milestone
 
-Day 2, Milestone 4 is complete. The project contains the five-screen Java/XML foundation, a local SQLite database, a validated Add Ingredient form, and a SQLite-backed pantry list using RecyclerView. Recipe data, recipe matching, editing, deletion, and expiry notifications remain future work.
+Day 3, Milestone 5 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, and complete pantry create, read, update, and delete functionality. Recipe data, recipe matching, and expiry notifications remain future work.
 
 ## Technology stack
 
@@ -14,7 +14,7 @@ Day 2, Milestone 4 is complete. The project contains the five-screen Java/XML fo
 - Android Activities and Intents for navigation
 - RecyclerView with a custom Java `PantryAdapter`
 - SQLite using `SQLiteOpenHelper` for local data storage
-- Android instrumentation tests for the SQLite schema and CRUD layer
+- Android instrumentation tests for the SQLite schema and pantry CRUD layer
 - Minimum Android SDK: API 24
 - Package name: `com.example.smartpantrymanager`
 - Gradle Kotlin DSL build scripts
@@ -38,14 +38,14 @@ The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngred
 ## Activities and current functionality
 
 - `PantryActivity` is the launcher, loads pantry records from SQLite into a RecyclerView, refreshes on return, and displays a clear empty state when no records exist.
-- `AddEditIngredientActivity` validates ingredient names, positive decimal quantities, canonical units, and optional ISO-8601 expiry dates before inserting a `PantryItem` into SQLite.
+- `AddEditIngredientActivity` validates ingredient names, positive decimal quantities, canonical units, and optional ISO-8601 expiry dates before inserting or updating a `PantryItem` in SQLite.
 - `SuggestedRecipesActivity` displays the recipe empty state.
 - `RecipeDetailActivity` provides a placeholder detail structure.
 - `SettingsActivity` provides a clearly disabled placeholder expiry-alert preference.
 
-The Add Ingredient form accepts `g`, `kg`, `ml`, `L`, and `pieces`. Quantity parsing rejects empty, non-numeric, zero, negative, non-finite, and locale-dependent comma values. Expiry dates are selected with an Android date picker and stored as `YYYY-MM-DD`; the field may remain empty. Saving returns to the pantry, where records persist after the application is closed and reopened.
+The Add/Edit Ingredient form accepts `g`, `kg`, `ml`, `L`, and `pieces`. Quantity parsing rejects empty, non-numeric, zero, negative, non-finite, and locale-dependent comma values. Expiry dates are selected with an Android date picker and stored as `YYYY-MM-DD`; the field may remain empty. Saving returns to the pantry, where records persist after the application is closed and reopened.
 
-Editing and deleting pantry records, recipe seeding, strict recipe matching, functional settings, and expiry notifications remain planned work.
+Each pantry row provides Edit and Delete actions. Edit preserves the SQLite record ID and updates only that row. Delete requires confirmation, names the selected ingredient, and refreshes the list and empty state after deletion. Recipe seeding, strict recipe matching, functional settings, and expiry notifications remain planned work.
 
 ## Setup
 

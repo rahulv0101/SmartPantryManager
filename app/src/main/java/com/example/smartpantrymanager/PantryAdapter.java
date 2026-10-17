@@ -18,10 +18,18 @@ import java.util.Locale;
  * Binds pantry records to the RecyclerView row layout.
  */
 public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryViewHolder> {
+    public interface OnItemActionListener {
+        void onEdit(PantryItem item);
+
+        void onDelete(PantryItem item);
+    }
+
     private final List<PantryItem> items = new ArrayList<>();
     private final DecimalFormat quantityFormat;
+    private final OnItemActionListener actionListener;
 
-    public PantryAdapter() {
+    public PantryAdapter(OnItemActionListener actionListener) {
+        this.actionListener = actionListener;
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
         quantityFormat = new DecimalFormat("0.####", symbols);
     }
@@ -58,6 +66,9 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
             holder.expiryTextView.setText(holder.itemView.getContext().getString(
                     R.string.pantry_expiry_format, expiryDate));
         }
+
+        holder.editButton.setOnClickListener(view -> actionListener.onEdit(item));
+        holder.deleteButton.setOnClickListener(view -> actionListener.onDelete(item));
     }
 
     @Override
@@ -69,12 +80,16 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
         private final TextView nameTextView;
         private final TextView quantityTextView;
         private final TextView expiryTextView;
+        private final View editButton;
+        private final View deleteButton;
 
         PantryViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.pantryItemNameTextView);
             quantityTextView = itemView.findViewById(R.id.pantryItemQuantityTextView);
             expiryTextView = itemView.findViewById(R.id.pantryItemExpiryTextView);
+            editButton = itemView.findViewById(R.id.editPantryItemButton);
+            deleteButton = itemView.findViewById(R.id.deletePantryItemButton);
         }
     }
 }

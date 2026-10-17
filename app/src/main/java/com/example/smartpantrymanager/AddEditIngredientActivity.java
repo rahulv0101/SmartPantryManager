@@ -1,21 +1,32 @@
 package com.example.smartpantrymanager;
 
-import android.os.Bundle;
 import android.app.DatePickerDialog;
+import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Calendar;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 public class AddEditIngredientActivity extends AppCompatActivity {
+    public static final String EXTRA_PANTRY_ITEM_ID =
+            "com.example.smartpantrymanager.EXTRA_PANTRY_ITEM_ID";
+
     private EditText ingredientNameEditText;
     private EditText quantityEditText;
     private Spinner unitSpinner;
     private EditText expiryDateEditText;
     private Button saveButton;
     private DatabaseHelper databaseHelper;
+    private long pantryItemId;
+    private boolean isEditing;
     private boolean isSaving;
 
     @Override
@@ -30,10 +41,17 @@ public class AddEditIngredientActivity extends AppCompatActivity {
         expiryDateEditText = findViewById(R.id.expiryDateEditText);
         saveButton = findViewById(R.id.saveIngredientButton);
 
+        pantryItemId = getIntent().getLongExtra(EXTRA_PANTRY_ITEM_ID, 0L);
+        isEditing = pantryItemId > 0;
+        configureForm();
+
         expiryDateEditText.setOnClickListener(view -> showExpiryDatePicker());
         saveButton.setOnClickListener(view -> saveIngredient());
-
         findViewById(R.id.cancelIngredientButton).setOnClickListener(view -> finish());
+
+        if (isEditing) {
+            loadIngredientForEditing();
+        }
     }
 
     @Override
@@ -44,16 +62,55 @@ public class AddEditIngredientActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private void configureForm() {
+        TextView titleTextView = findViewById(R.id.ingredientFormTitleTextView);
+        if (isEditing) {
+            titleTextView.setText(R.string.edit_ingredient);
+            saveButton.setText(R.string.save);
+        } else {
+            titleTextView.setText(R.string.add_ingredient);
+        }
+    }
+
+    private void loadIngredientForEditing() {
+        PantryItem item = databaseHelper.getPantryItemById(pantryItemId);
+        if (item == null) {
+            Toast.makeText(this, R.string.ingredient_not_found_message, Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
+
+        ingredientNameEditText.setText(item.getName());
+        DecimalFormat quantityFormat = new DecimalFormat("0.####",
+                DecimalFormatSymbols.getInstance(Locale.US));
+        quantityEditText.setText(quantityFormat.format(item.getQuantity()));
+        setUnitSelection(item.getUnit());
+        expiryDateEditText.setText(item.getExpiryDate() == null ? "" : item.getExpiryDate());
+    }
+
+    private void setUnitSelection(String unit) {
+        if (unit == null) {
+            return;
+        }
+        for (int index = 0; index < unitSpinner.getCount(); index++) {
+            if (unit.equals(unitSpinner.getItemAtPosition(index).toString())) {
+                unitSpinner.setSelection(index);
+                return;
+            }
+        }
+        unitSpinner.setSelection(0);
+    }
+
     private void showExpiryDatePicker() {
-        java.util.Calendar today = java.util.Calendar.getInstance();
+        Calendar today = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(
                 this,
                 (datePicker, year, month, dayOfMonth) -> expiryDateEditText.setText(
-                        String.format(java.util.Locale.US, "%04d-%02d-%02d",
+                        String.format(Locale.US, "%04d-%02d-%02d",
                                 year, month + 1, dayOfMonth)),
-                today.get(java.util.Calendar.YEAR),
-                today.get(java.util.Calendar.MONTH),
-                today.get(java.util.Calendar.DAY_OF_MONTH));
+                today.get(Calendar.YEAR),
+                today.get(Calendar.MONTH),
+                today.get(Calendar.DAY_OF_MONTH));
         dialog.show();
     }
 
@@ -99,20 +156,31 @@ public class AddEditIngredientActivity extends AppCompatActivity {
 
         isSaving = true;
         saveButton.setEnabled(false);
-        PantryItem item = new PantryItem(name, quantity,
+        PantryItem item = new PantryItem(pantryItemId, name, quantity,
                 unitSpinner.getSelectedItem().toString(), expiryDate.isEmpty() ? null : expiryDate);
         try {
-            long insertedId = databaseHelper.insertPantryItem(item);
-            if (insertedId <= 0) {
-                throw new IllegalStateException("SQLite did not return a new row id");
+            if (isEditing) {
+                int updatedRows = databaseHelper.updatePantryItem(item);
+                if (updatedRows != 1) {
+                    throw new IllegalStateException("SQLite did not update the requested row");
+                }
+                Toast.makeText(this, R.string.ingredient_updated_message, Toast.LENGTH_SHORT).show();
+            } else {
+                long insertedId = databaseHelper.insertPantryItem(item);
+                if (insertedId <= 0) {
+                    throw new IllegalStateException("SQLite did not return a new row id");
+                }
+                Toast.makeText(this, R.string.ingredient_saved_message, Toast.LENGTH_SHORT).show();
             }
-            Toast.makeText(this, R.string.ingredient_saved_message, Toast.LENGTH_SHORT).show();
             setResult(RESULT_OK);
             finish();
         } catch (RuntimeException exception) {
             isSaving = false;
             saveButton.setEnabled(true);
-            Toast.makeText(this, R.string.ingredient_save_failed_message, Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    isEditing ? R.string.ingredient_update_failed_message
+                            : R.string.ingredient_save_failed_message,
+                    Toast.LENGTH_LONG).show();
         }
     }
 

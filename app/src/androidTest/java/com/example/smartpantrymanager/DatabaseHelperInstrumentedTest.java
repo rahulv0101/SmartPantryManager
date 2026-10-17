@@ -105,6 +105,36 @@ public class DatabaseHelperInstrumentedTest {
     }
 
     @Test
+    public void updatingAnItemPreservesItsIdAndDoesNotDuplicateIt() {
+        long id = databaseHelper.insertPantryItem(new PantryItem("Eggs", 4.0, "pieces", null));
+        PantryItem item = databaseHelper.getPantryItemById(id);
+        assertNotNull(item);
+
+        item.setName("Large Eggs");
+        item.setQuantity(6.0);
+        assertEquals(1, databaseHelper.updatePantryItem(item));
+
+        List<PantryItem> items = databaseHelper.getAllPantryItems();
+        assertEquals(1, items.size());
+        assertEquals(id, items.get(0).getId());
+        assertEquals("Large Eggs", items.get(0).getName());
+        assertEquals(6.0, items.get(0).getQuantity(), 0.001);
+    }
+
+    @Test
+    public void deletingAnItemDoesNotDeleteAnotherItem() {
+        long deletedId = databaseHelper.insertPantryItem(
+                new PantryItem("Milk", 500.0, "ml", null));
+        long retainedId = databaseHelper.insertPantryItem(
+                new PantryItem("Flour", 1.5, "kg", null));
+
+        assertEquals(1, databaseHelper.deletePantryItem(deletedId));
+        assertNull(databaseHelper.getPantryItemById(deletedId));
+        assertNotNull(databaseHelper.getPantryItemById(retainedId));
+        assertEquals(1, databaseHelper.getAllPantryItems().size());
+    }
+
+    @Test
     public void recipeIngredientForeignKeyRejectsUnknownRecipe() {
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
