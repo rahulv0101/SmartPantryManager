@@ -40,4 +40,13 @@ public class IngredientInputValidatorTest {
         assertFalse(IngredientInputValidator.isValidOptionalExpiryDate("2026-02-30"));
         assertFalse(IngredientInputValidator.isValidOptionalExpiryDate("28/02/2026"));
     }
+
+    @Test
+    public void acceptsOnlyCanonicalMeasurementUnits() {
+        assertTrue(IngredientInputValidator.isSupportedUnit("g"));
+        assertTrue(IngredientInputValidator.isSupportedUnit("pieces"));
+        assertFalse(IngredientInputValidator.isSupportedUnit("grams"));
+        assertFalse(IngredientInputValidator.isSupportedUnit(""));
+        assertFalse(IngredientInputValidator.isSupportedUnit(null));
+    }
 }

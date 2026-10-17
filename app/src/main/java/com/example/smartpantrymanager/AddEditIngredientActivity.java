@@ -141,7 +141,9 @@ public class AddEditIngredientActivity extends AppCompatActivity {
             return;
         }
 
-        if (unitSpinner.getSelectedItemPosition() == 0) {
+        String unit = unitSpinner.getSelectedItem() == null
+                ? "" : unitSpinner.getSelectedItem().toString();
+        if (!IngredientInputValidator.isSupportedUnit(unit)) {
             unitSpinner.performClick();
             Toast.makeText(this, R.string.unit_required_error, Toast.LENGTH_SHORT).show();
             return;
@@ -157,7 +159,7 @@ public class AddEditIngredientActivity extends AppCompatActivity {
         isSaving = true;
         saveButton.setEnabled(false);
         PantryItem item = new PantryItem(pantryItemId, name, quantity,
-                unitSpinner.getSelectedItem().toString(), expiryDate.isEmpty() ? null : expiryDate);
+                unit, expiryDate.isEmpty() ? null : expiryDate);
         try {
             if (isEditing) {
                 int updatedRows = databaseHelper.updatePantryItem(item);

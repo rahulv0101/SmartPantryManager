@@ -4,7 +4,7 @@ Smart Pantry Manager is an Android application for reducing household food waste
 
 ## Current milestone
 
-Day 3, Milestone 5 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, and complete pantry create, read, update, and delete functionality. Recipe data, recipe matching, and expiry notifications remain future work.
+Day 3, Milestone 6 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry create, read, update, and delete functionality, and strengthened validation and accessibility behavior. Recipe data, recipe matching, and expiry notifications remain future work.
 
 ## Technology stack
 
@@ -47,6 +47,8 @@ The Add/Edit Ingredient form accepts `g`, `kg`, `ml`, `L`, and `pieces`. Quantit
 
 Each pantry row provides Edit and Delete actions. Edit preserves the SQLite record ID and updates only that row. Delete requires confirmation, names the selected ingredient, and refreshes the list and empty state after deletion. Recipe seeding, strict recipe matching, functional settings, and expiry notifications remain planned work.
 
+Edit and Delete controls expose ingredient-specific accessibility descriptions. Canonical unit validation accepts only `g`, `kg`, `ml`, `L`, and `pieces`, including when an existing record is edited. The database remains at schema version 1 and no destructive migration is used.
+
 ## Setup
 
 1. Install Android Studio with an Android SDK platform and build tools compatible with the project configuration.
@@ -72,6 +74,8 @@ gradlew.bat connectedDebugAndroidTest
 ```
 
 `connectedAndroidTest` requires a working Android emulator or physical device. If no device is connected, the database instrumentation tests remain pending until an Android test target is available.
+
+The configured test AVD is `Medium_Phone_API_37.0`. If `adb devices` reports it as `offline`, allow the emulator to finish booting, then run `adb kill-server`, `adb start-server`, and `adb devices` before retrying `gradlew.bat connectedDebugAndroidTest`. During Milestone 6, the AVD remained offline and instrumentation tests could not execute. No live CRUD screenshots were captured; manual verification should cover add, edit, cancel, delete confirmation, deletion, persistence, and navigation once an online device is available.
 
 ## Development approach
 

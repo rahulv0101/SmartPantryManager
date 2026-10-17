@@ -69,6 +69,10 @@ public class PantryAdapter extends RecyclerView.Adapter<PantryAdapter.PantryView
 
         holder.editButton.setOnClickListener(view -> actionListener.onEdit(item));
         holder.deleteButton.setOnClickListener(view -> actionListener.onDelete(item));
+        holder.editButton.setContentDescription(holder.itemView.getContext().getString(
+                R.string.edit_ingredient_action, item.getName()));
+        holder.deleteButton.setContentDescription(holder.itemView.getContext().getString(
+                R.string.delete_ingredient_action, item.getName()));
     }
 
     @Override

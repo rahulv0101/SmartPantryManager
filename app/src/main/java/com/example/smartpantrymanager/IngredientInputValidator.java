@@ -11,6 +11,7 @@ import java.util.Locale;
  */
 public final class IngredientInputValidator {
     private static final String DATE_PATTERN = "yyyy-MM-dd";
+    private static final String[] SUPPORTED_UNITS = {"g", "kg", "ml", "L", "pieces"};
 
     private IngredientInputValidator() {
         // Utility class.
@@ -58,5 +59,18 @@ public final class IngredientInputValidator {
         ParsePosition position = new ParsePosition(0);
         return formatter.parse(normalized, position) != null
                 && position.getIndex() == normalized.length();
+    }
+
+    public static boolean isSupportedUnit(String value) {
+        if (value == null) {
+            return false;
+        }
+        String normalized = value.trim();
+        for (String supportedUnit : SUPPORTED_UNITS) {
+            if (supportedUnit.equals(normalized)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
