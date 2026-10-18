@@ -31,7 +31,11 @@
     <string name="ingredient_update_failed_message">The ingredient could not be updated. Please try again.</string>
     <string name="ingredient_delete_failed_message">The ingredient could not be deleted. Please try again.</string>
     <string name="ingredient_not_found_message">That ingredient is no longer available.</string>
-    <string name="empty_recipes_message">There are no suggested recipes yet. Pantry matching will be added in a later milestone.</string>
+    <string name="empty_recipes_message">No recipes can be made with your current pantry ingredients.</string>
+    <string name="open_recipe_action">Open recipe: %1$s</string>
+    <string name="recipe_not_found_message">This recipe is no longer available.</string>
+    <string name="recipe_ingredients_unavailable">Ingredient requirements are unavailable.</string>
+    <string name="recipe_ingredient_format">%1$s — %2$s %3$s</string>
     <string name="open_recipe_details_placeholder">Open Recipe Details (placeholder)</string>
     <string name="recipe_details">Recipe Details</string>
     <string name="no_recipe_selected">No recipe is selected yet.</string>

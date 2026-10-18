@@ -19,12 +19,13 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/recipeNameTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/no_recipe_selected"
-            android:textColor="@color/text_primary"
-            android:textSize="18sp" />
+            android:textColor="@color/primary_green_dark"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
@@ -36,10 +37,10 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/recipeIngredientsTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/recipe_ingredients_placeholder"
             android:textColor="@color/text_primary"
             android:textSize="16sp" />
 
@@ -53,10 +54,10 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/recipeInstructionsTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="@string/recipe_instructions_placeholder"
             android:textColor="@color/text_primary"
             android:textSize="16sp" />
 

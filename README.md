@@ -1,10 +1,10 @@
 # Smart Pantry Manager
 
-Smart Pantry Manager is an Android application for reducing household food waste. It will allow users to record ingredients available in their pantry and, in later milestones, suggest recipes that can be prepared using only those ingredients in sufficient quantities.
+Smart Pantry Manager is an Android application for reducing household food waste. Users record ingredients available in their pantry and receive recipe suggestions only when every required ingredient is available in sufficient quantity.
 
 ## Current milestone
 
-Day 4, Milestone 7 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, and a transactional catalogue of 20 seeded recipes. Recipe matching and expiry notifications remain future work.
+Day 4, Milestone 8 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, a transactional catalogue of 20 seeded recipes, strict recipe matching, and SQLite-backed recipe detail screens. Functional settings and expiry notifications remain future work.
 
 ## Technology stack
 
@@ -33,21 +33,23 @@ The schema contains:
 
 Indexes support lookup of recipe requirements by recipe and ingredient name. Recipe names have a unique index so repeated initialization cannot create duplicates. The database version is now 2; upgrading a version 1 database adds the seed without dropping or recreating `pantry_items`.
 
-The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngredient`. The future matching layer will be able to normalise ingredient names and compare required quantities and compatible units without coupling that logic to an Activity. The current seed uses only `g`, `kg`, `ml`, `L`, and `pieces`; conversion between compatible units is planned for the next milestone.
+The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngredient`. The current seed uses only `g`, `kg`, `ml`, `L`, and `pieces`. `UnitConverter` supports g/kg, ml/L, and pieces conversions while rejecting incompatible dimensions. The pure-Java `RecipeMatcher` normalises names, applies explicit safe singular/plural aliases, aggregates duplicate pantry records, sums duplicate recipe requirements, and requires every recipe requirement to be satisfied.
 
 ## Activities and current functionality
 
 - `PantryActivity` is the launcher, loads pantry records from SQLite into a RecyclerView, refreshes on return, and displays a clear empty state when no records exist.
 - `AddEditIngredientActivity` validates ingredient names, positive decimal quantities, canonical units, and optional ISO-8601 expiry dates before inserting or updating a `PantryItem` in SQLite.
-- `SuggestedRecipesActivity` displays the recipe empty state.
-- `RecipeDetailActivity` provides a placeholder detail structure.
+- `SuggestedRecipesActivity` loads recipes and pantry data from SQLite and displays only recipes that pass strict all-ingredients and sufficient-quantity matching.
+- `RecipeDetailActivity` loads the selected recipe and its required ingredients and instructions from SQLite.
 - `SettingsActivity` provides a clearly disabled placeholder expiry-alert preference.
 
 The Add/Edit Ingredient form accepts `g`, `kg`, `ml`, `L`, and `pieces`. Quantity parsing rejects empty, non-numeric, zero, negative, non-finite, and locale-dependent comma values. Expiry dates are selected with an Android date picker and stored as `YYYY-MM-DD`; the field may remain empty. Saving returns to the pantry, where records persist after the application is closed and reopened.
 
-Each pantry row provides Edit and Delete actions. Edit preserves the SQLite record ID and updates only that row. Delete requires confirmation, names the selected ingredient, and refreshes the list and empty state after deletion. Strict recipe matching, functional settings, and expiry notifications remain planned work.
+Each pantry row provides Edit and Delete actions. Edit preserves the SQLite record ID and updates only that row. Delete requires confirmation, names the selected ingredient, and refreshes the list and empty state after deletion. Recipe rows open the corresponding SQLite-backed detail screen through an explicit Intent.
 
 Edit and Delete controls expose ingredient-specific accessibility descriptions. Canonical unit validation accepts only `g`, `kg`, `ml`, `L`, and `pieces`, including when an existing record is edited. `DatabaseHelper` seeds 20 distinct recipes with instructions and complete ingredient requirements inside a transaction. New databases seed during creation; existing version 1 databases receive the same data through a non-destructive version 2 upgrade. Recipe data can be retrieved through `getAllRecipes()`, `getRecipeById()`, `getRecipeIngredients()`, and `countRecipes()`.
+
+Recipe matching intentionally does not perform arbitrary mass-to-volume conversions: grams and kilograms are compatible, millilitres and litres are compatible, and pieces only match pieces. Missing ingredients, insufficient quantities, invalid requirements, and incompatible units exclude a recipe from the main suggestions list. Pantry records are not modified by matching.
 
 ## Setup
 
@@ -75,8 +77,8 @@ gradlew.bat connectedDebugAndroidTest
 
 `connectedAndroidTest` requires a working Android emulator or physical device. If no device is connected, the database instrumentation tests remain pending until an Android test target is available.
 
-The configured test AVD is `Medium_Phone_API_37.0`. If `adb devices` reports it as `offline`, allow the emulator to finish booting, then run `adb kill-server`, `adb start-server`, and `adb devices` before retrying `gradlew.bat connectedDebugAndroidTest`. During Milestone 6, the AVD remained offline and instrumentation tests could not execute. No live CRUD screenshots were captured; manual verification should cover add, edit, cancel, delete confirmation, deletion, persistence, and navigation once an online device is available.
+The configured test AVD is `Medium_Phone_API_37.0`. If `adb devices` reports it as `offline`, allow the emulator to finish booting, then run `adb kill-server`, `adb start-server`, and `adb devices` before retrying `gradlew.bat connectedDebugAndroidTest`. During Milestone 8, `emulator-5554` remained offline, so instrumentation tests, live recipe navigation, and screenshots could not be verified. The pure-Java matcher tests passed; manual verification should cover recipe filtering, detail navigation, persistence, and navigation once an online device is available.
 
 ## Development approach
 
-Development is incremental. Each milestone will be reviewed and tested before it is committed. The repository history will document genuine completed work; changes will not be backdated or fabricated.
+Development is incremental. Each milestone will be reviewed and tested before it is committed. The repository history will document genuine completed work; changes will not be backdated or fabricated. Remaining work includes functional settings, expiry notifications, and any later assignment features outside the current milestone.
