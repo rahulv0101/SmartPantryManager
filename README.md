@@ -4,7 +4,7 @@ Smart Pantry Manager is an Android application for reducing household food waste
 
 ## Current milestone
 
-Day 3, Milestone 6 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry create, read, update, and delete functionality, and strengthened validation and accessibility behavior. Recipe data, recipe matching, and expiry notifications remain future work.
+Day 4, Milestone 7 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, and a transactional catalogue of 20 seeded recipes. Recipe matching and expiry notifications remain future work.
 
 ## Technology stack
 
@@ -31,9 +31,9 @@ The schema contains:
 - `recipes`: `id`, `name`, and preparation `instructions`.
 - `recipe_ingredients`: `id`, `recipe_id`, ingredient name, positive required quantity, and unit. Each requirement references a recipe with a foreign key and cascade delete.
 
-Indexes support lookup of recipe requirements by recipe and ingredient name. Recipe rows and the 20 required preloaded recipes will be added in later milestones; no recipe data is seeded yet.
+Indexes support lookup of recipe requirements by recipe and ingredient name. Recipe names have a unique index so repeated initialization cannot create duplicates. The database version is now 2; upgrading a version 1 database adds the seed without dropping or recreating `pantry_items`.
 
-The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngredient`. The future matching layer will be able to normalise ingredient names and compare required quantities and compatible units without coupling that logic to an Activity.
+The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngredient`. The future matching layer will be able to normalise ingredient names and compare required quantities and compatible units without coupling that logic to an Activity. The current seed uses only `g`, `kg`, `ml`, `L`, and `pieces`; conversion between compatible units is planned for the next milestone.
 
 ## Activities and current functionality
 
@@ -45,9 +45,9 @@ The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngred
 
 The Add/Edit Ingredient form accepts `g`, `kg`, `ml`, `L`, and `pieces`. Quantity parsing rejects empty, non-numeric, zero, negative, non-finite, and locale-dependent comma values. Expiry dates are selected with an Android date picker and stored as `YYYY-MM-DD`; the field may remain empty. Saving returns to the pantry, where records persist after the application is closed and reopened.
 
-Each pantry row provides Edit and Delete actions. Edit preserves the SQLite record ID and updates only that row. Delete requires confirmation, names the selected ingredient, and refreshes the list and empty state after deletion. Recipe seeding, strict recipe matching, functional settings, and expiry notifications remain planned work.
+Each pantry row provides Edit and Delete actions. Edit preserves the SQLite record ID and updates only that row. Delete requires confirmation, names the selected ingredient, and refreshes the list and empty state after deletion. Strict recipe matching, functional settings, and expiry notifications remain planned work.
 
-Edit and Delete controls expose ingredient-specific accessibility descriptions. Canonical unit validation accepts only `g`, `kg`, `ml`, `L`, and `pieces`, including when an existing record is edited. The database remains at schema version 1 and no destructive migration is used.
+Edit and Delete controls expose ingredient-specific accessibility descriptions. Canonical unit validation accepts only `g`, `kg`, `ml`, `L`, and `pieces`, including when an existing record is edited. `DatabaseHelper` seeds 20 distinct recipes with instructions and complete ingredient requirements inside a transaction. New databases seed during creation; existing version 1 databases receive the same data through a non-destructive version 2 upgrade. Recipe data can be retrieved through `getAllRecipes()`, `getRecipeById()`, `getRecipeIngredients()`, and `countRecipes()`.
 
 ## Setup
 

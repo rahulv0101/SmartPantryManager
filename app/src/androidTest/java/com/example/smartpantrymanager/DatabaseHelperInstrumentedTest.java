@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -15,6 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -149,6 +152,88 @@ public class DatabaseHelperInstrumentedTest {
         } catch (SQLiteConstraintException expected) {
             assertTrue(expected.getMessage().contains("FOREIGN KEY"));
         }
+    }
+
+    @Test
+    public void recipeSeedContainsCompleteCatalogueWithSupportedUnits() {
+        List<Recipe> recipes = databaseHelper.getAllRecipes();
+        assertTrue(recipes.size() >= 20);
+
+        Set<String> recipeNames = new HashSet<>();
+        for (Recipe recipe : recipes) {
+            assertTrue(recipeNames.add(recipe.getName()));
+            assertFalse(recipe.getInstructions().trim().isEmpty());
+
+            List<RecipeIngredient> ingredients = databaseHelper.getRecipeIngredients(recipe.getId());
+            assertFalse(ingredients.isEmpty());
+            for (RecipeIngredient ingredient : ingredients) {
+                assertEquals(recipe.getId(), ingredient.getRecipeId());
+                assertTrue(ingredient.getRequiredQuantity() > 0);
+                assertTrue(IngredientInputValidator.isSupportedUnit(ingredient.getUnit()));
+            }
+        }
+    }
+
+    @Test
+    public void recipeCanBeRetrievedByIdWithItsIngredients() {
+        Recipe recipe = databaseHelper.getAllRecipes().get(0);
+        Recipe retrieved = databaseHelper.getRecipeById(recipe.getId());
+
+        assertNotNull(retrieved);
+        assertEquals(recipe.getName(), retrieved.getName());
+        assertFalse(databaseHelper.getRecipeIngredients(retrieved.getId()).isEmpty());
+        assertNull(databaseHelper.getRecipeById(-1));
+    }
+
+    @Test
+    public void reopeningDatabaseDoesNotDuplicateRecipeSeed() {
+        int initialCount = databaseHelper.countRecipes();
+        databaseHelper.close();
+        databaseHelper = new DatabaseHelper(context);
+
+        assertEquals(initialCount, databaseHelper.countRecipes());
+    }
+
+    @Test
+    public void versionOnePantryDataSurvivesRecipeMigration() {
+        databaseHelper.close();
+        SQLiteOpenHelper versionOneHelper = new SQLiteOpenHelper(
+                context, DatabaseHelper.DATABASE_NAME, null, 1) {
+            @Override
+            public void onCreate(SQLiteDatabase db) {
+                db.execSQL("CREATE TABLE pantry_items ("
+                        + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + "name TEXT NOT NULL, quantity REAL NOT NULL, "
+                        + "unit TEXT NOT NULL, expiry_date TEXT)");
+                db.execSQL("CREATE TABLE recipes ("
+                        + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + "name TEXT NOT NULL, instructions TEXT NOT NULL)");
+                db.execSQL("CREATE TABLE recipe_ingredients ("
+                        + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                        + "recipe_id INTEGER NOT NULL, ingredient_name TEXT NOT NULL, "
+                        + "required_quantity REAL NOT NULL, unit TEXT NOT NULL, "
+                        + "FOREIGN KEY(recipe_id) REFERENCES recipes(id) ON DELETE CASCADE)");
+            }
+
+            @Override
+            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+                // This helper represents the already-installed version 1 schema.
+            }
+        };
+
+        ContentValues values = new ContentValues();
+        values.put("name", "Existing Flour");
+        values.put("quantity", 1.0);
+        values.put("unit", "kg");
+        SQLiteDatabase legacyDatabase = versionOneHelper.getWritableDatabase();
+        long pantryId = legacyDatabase.insertOrThrow(DatabaseHelper.TABLE_PANTRY_ITEMS, null, values);
+        versionOneHelper.close();
+
+        databaseHelper = new DatabaseHelper(context);
+        PantryItem preserved = databaseHelper.getPantryItemById(pantryId);
+        assertNotNull(preserved);
+        assertEquals("Existing Flour", preserved.getName());
+        assertTrue(databaseHelper.countRecipes() >= 20);
     }
 
     private void assertInvalid(PantryItem item) {

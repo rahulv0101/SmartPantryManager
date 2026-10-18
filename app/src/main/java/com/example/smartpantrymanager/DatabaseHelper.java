@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "smart_pantry.db";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
 
     public static final String TABLE_PANTRY_ITEMS = "pantry_items";
     public static final String TABLE_RECIPES = "recipes";
@@ -74,12 +74,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + TABLE_RECIPE_INGREDIENTS + "(" + COLUMN_RECIPE_ID + ")");
         db.execSQL("CREATE INDEX idx_recipe_ingredients_name ON "
                 + TABLE_RECIPE_INGREDIENTS + "(" + COLUMN_INGREDIENT_NAME + ")");
+        db.execSQL("CREATE UNIQUE INDEX idx_recipes_name ON "
+                + TABLE_RECIPES + "(" + COLUMN_NAME + ")");
+        seedRecipesIfNeeded(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Version 1 is the initial schema. Future migrations must use ALTER
-        // TABLE or another non-destructive strategy so pantry data is retained.
+        if (oldVersion < 2) {
+            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_recipes_name ON "
+                    + TABLE_RECIPES + "(" + COLUMN_NAME + ")");
+            seedRecipesIfNeeded(db);
+        }
     }
 
     public long insertPantryItem(PantryItem item) {
@@ -144,6 +150,102 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.delete(TABLE_PANTRY_ITEMS, whereClause, whereArgs);
     }
 
+    public List<Recipe> getAllRecipes() {
+        SQLiteDatabase db = getReadableDatabase();
+        List<Recipe> recipes = new ArrayList<>();
+        String orderBy = COLUMN_NAME + " COLLATE NOCASE ASC, " + COLUMN_ID + " ASC";
+
+        try (Cursor cursor = db.query(TABLE_RECIPES, null, null, null,
+                null, null, orderBy)) {
+            while (cursor.moveToNext()) {
+                recipes.add(readRecipe(cursor));
+            }
+        }
+        return recipes;
+    }
+
+    public Recipe getRecipeById(long id) {
+        if (id <= 0) {
+            return null;
+        }
+
+        SQLiteDatabase db = getReadableDatabase();
+        String selection = COLUMN_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(id)};
+        try (Cursor cursor = db.query(TABLE_RECIPES, null, selection, selectionArgs,
+                null, null, null)) {
+            if (cursor.moveToFirst()) {
+                return readRecipe(cursor);
+            }
+        }
+        return null;
+    }
+
+    public List<RecipeIngredient> getRecipeIngredients(long recipeId) {
+        if (recipeId <= 0) {
+            return new ArrayList<>();
+        }
+
+        SQLiteDatabase db = getReadableDatabase();
+        List<RecipeIngredient> ingredients = new ArrayList<>();
+        String selection = COLUMN_RECIPE_ID + " = ?";
+        String[] selectionArgs = {String.valueOf(recipeId)};
+        String orderBy = COLUMN_ID + " ASC";
+        try (Cursor cursor = db.query(TABLE_RECIPE_INGREDIENTS, null, selection, selectionArgs,
+                null, null, orderBy)) {
+            while (cursor.moveToNext()) {
+                ingredients.add(readRecipeIngredient(cursor));
+            }
+        }
+        return ingredients;
+    }
+
+    public int countRecipes() {
+        SQLiteDatabase db = getReadableDatabase();
+        return countRecipes(db);
+    }
+
+    private int countRecipes(SQLiteDatabase db) {
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_RECIPES, null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        }
+    }
+
+    private void seedRecipesIfNeeded(SQLiteDatabase db) {
+        if (countRecipes(db) > 0) {
+            return;
+        }
+
+        boolean startedTransaction = !db.inTransaction();
+        if (startedTransaction) {
+            db.beginTransaction();
+        }
+        try {
+            for (RecipeSeedData.SeedRecipe seedRecipe : RecipeSeedData.getRecipes()) {
+                ContentValues recipeValues = new ContentValues();
+                recipeValues.put(COLUMN_NAME, seedRecipe.getName());
+                recipeValues.put(COLUMN_INSTRUCTIONS, seedRecipe.getInstructions());
+                long recipeId = db.insertOrThrow(TABLE_RECIPES, null, recipeValues);
+
+                for (RecipeSeedData.SeedIngredient seedIngredient : seedRecipe.getIngredients()) {
+                    ContentValues ingredientValues = new ContentValues();
+                    ingredientValues.put(COLUMN_RECIPE_ID, recipeId);
+                    ingredientValues.put(COLUMN_INGREDIENT_NAME, seedIngredient.getName());
+                    ingredientValues.put(COLUMN_REQUIRED_QUANTITY, seedIngredient.getQuantity());
+                    ingredientValues.put(COLUMN_UNIT, seedIngredient.getUnit());
+                    db.insertOrThrow(TABLE_RECIPE_INGREDIENTS, null, ingredientValues);
+                }
+            }
+            if (startedTransaction) {
+                db.setTransactionSuccessful();
+            }
+        } finally {
+            if (startedTransaction) {
+                db.endTransaction();
+            }
+        }
+    }
+
     private ContentValues toContentValues(PantryItem item) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, item.getName().trim());
@@ -172,6 +274,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 cursor.getString(unitIndex),
                 expiryDate
         );
+    }
+
+    private Recipe readRecipe(Cursor cursor) {
+        int idIndex = cursor.getColumnIndexOrThrow(COLUMN_ID);
+        int nameIndex = cursor.getColumnIndexOrThrow(COLUMN_NAME);
+        int instructionsIndex = cursor.getColumnIndexOrThrow(COLUMN_INSTRUCTIONS);
+        return new Recipe(cursor.getLong(idIndex), cursor.getString(nameIndex),
+                cursor.getString(instructionsIndex));
+    }
+
+    private RecipeIngredient readRecipeIngredient(Cursor cursor) {
+        int idIndex = cursor.getColumnIndexOrThrow(COLUMN_ID);
+        int recipeIdIndex = cursor.getColumnIndexOrThrow(COLUMN_RECIPE_ID);
+        int nameIndex = cursor.getColumnIndexOrThrow(COLUMN_INGREDIENT_NAME);
+        int quantityIndex = cursor.getColumnIndexOrThrow(COLUMN_REQUIRED_QUANTITY);
+        int unitIndex = cursor.getColumnIndexOrThrow(COLUMN_UNIT);
+        return new RecipeIngredient(cursor.getLong(idIndex), cursor.getLong(recipeIdIndex),
+                cursor.getString(nameIndex), cursor.getDouble(quantityIndex),
+                cursor.getString(unitIndex));
     }
 
     private void validatePantryItem(PantryItem item) {
