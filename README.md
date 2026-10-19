@@ -4,7 +4,7 @@ Smart Pantry Manager is an Android application for reducing household food waste
 
 ## Current milestone
 
-Day 5, Milestone 9 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, a transactional catalogue of 20 seeded recipes, strict recipe matching, SQLite-backed recipe detail screens, and a persistent Settings preference for expiring-soon alerts. Alert scheduling and notification delivery remain future work.
+Day 5, Milestone 10 final implementation is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, a transactional catalogue of 20 seeded recipes, strict recipe matching, SQLite-backed recipe detail screens, and a persistent Settings preference for expiring-soon alerts. Alert scheduling and notification delivery remain future work.
 
 ## Technology stack
 
@@ -84,6 +84,14 @@ The configured test AVD is `Medium_Phone_API_37.0`. If `adb devices` reports it 
 On 19 October 2026, the existing AVD briefly reported `offline` after a non-destructive cold boot, then became stable as `emulator-5554 device` across repeated ADB checks. The debug APK installed and launched into `PantryActivity`. `build`, `test`, and `lint` succeeded, and `connectedDebugAndroidTest` completed successfully, including the SharedPreferences tests. The Settings switch was toggled on, the application was force-stopped and relaunched, and the switch remained enabled after reopening Settings.
 
 Genuine evidence screenshots were saved outside the source tree in `C:\Users\User\Documents\Codex\SmartPantryManager-evidence`. Full add/edit/delete and recipe workflow coverage still requires a broader dedicated live test pass; no unverified workflow is represented as passed here.
+
+## Final Milestone 10 verification
+
+Using disposable data on `Medium_Phone_API_37.0`, the final live pass verified the empty pantry state, ingredient creation, display of name/quantity/unit/expiry status, edit form prepopulation, edit cancellation, quantity update, delete confirmation cancellation, confirmed deletion, and restoration of the empty state. The app launched into `PantryActivity` and navigated to Suggested Recipes and Recipe Detail.
+
+The strict matching demonstration used the seeded `Boiled Eggs` recipe. With one egg, the recipe was excluded; with two eggs, it appeared; Recipe Detail displayed `Eggs — 2 pieces` and the seeded preparation instructions; deleting the required egg removed the recipe again. Automated matcher tests cover kg/g, L/ml, incompatible units, normalization, duplicate aggregation, missing ingredients, and insufficient quantities. Those conversions were not separately demonstrated through the live form in this pass.
+
+The evidence folder contains genuine emulator screenshots and UI hierarchy captures for the empty pantry, pantry ingredient, edit result, delete confirmation, recipe empty state, matched recipe, recipe detail, required-ingredient deletion, invalid input, and Settings screens. Full expiry-date entry, decimal quantity, multi-ingredient recipe, and every five-screen navigation path remain suitable for an additional demonstration pass rather than being claimed as completed here.
 
 ## Development approach
 

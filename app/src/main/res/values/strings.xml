@@ -20,6 +20,7 @@
     <string name="expiry_date_invalid_error">Choose a valid expiry date.</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="back">Back</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="edit_ingredient_action">Edit %1$s</string>
