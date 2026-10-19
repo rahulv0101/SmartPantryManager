@@ -4,7 +4,7 @@ Smart Pantry Manager is an Android application for reducing household food waste
 
 ## Current milestone
 
-Day 4, Milestone 8 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, a transactional catalogue of 20 seeded recipes, strict recipe matching, and SQLite-backed recipe detail screens. Functional settings and expiry notifications remain future work.
+Day 5, Milestone 9 is complete. The project contains a validated Add Ingredient form, a SQLite-backed RecyclerView pantry list, complete pantry CRUD functionality, a transactional catalogue of 20 seeded recipes, strict recipe matching, SQLite-backed recipe detail screens, and a persistent Settings preference for expiring-soon alerts. Alert scheduling and notification delivery remain future work.
 
 ## Technology stack
 
@@ -41,7 +41,7 @@ The database models are represented by `PantryItem`, `Recipe`, and `RecipeIngred
 - `AddEditIngredientActivity` validates ingredient names, positive decimal quantities, canonical units, and optional ISO-8601 expiry dates before inserting or updating a `PantryItem` in SQLite.
 - `SuggestedRecipesActivity` loads recipes and pantry data from SQLite and displays only recipes that pass strict all-ingredients and sufficient-quantity matching.
 - `RecipeDetailActivity` loads the selected recipe and its required ingredients and instructions from SQLite.
-- `SettingsActivity` provides a clearly disabled placeholder expiry-alert preference.
+- `SettingsActivity` provides a persistent expiring-soon alerts preference backed by Android `SharedPreferences`. The preference records the user's choice, but it does not yet schedule notifications or display expiry warnings.
 
 The Add/Edit Ingredient form accepts `g`, `kg`, `ml`, `L`, and `pieces`. Quantity parsing rejects empty, non-numeric, zero, negative, non-finite, and locale-dependent comma values. Expiry dates are selected with an Android date picker and stored as `YYYY-MM-DD`; the field may remain empty. Saving returns to the pantry, where records persist after the application is closed and reopened.
 
@@ -65,7 +65,7 @@ From a terminal, the project can be built with:
 gradlew.bat build
 ```
 
-The project is configured for Java 17 as the Gradle runtime, with Java 11 source and target compatibility for the Android application.
+The project is configured for Java 17 as the Gradle runtime, with Java 11 source and target compatibility for the Android application. The verified SDK location used during Milestone 9 was `C:\Users\User\AppData\Local\Android\Sdk`.
 
 To run the local and instrumentation test suites from a terminal:
 
@@ -77,8 +77,14 @@ gradlew.bat connectedDebugAndroidTest
 
 `connectedAndroidTest` requires a working Android emulator or physical device. If no device is connected, the database instrumentation tests remain pending until an Android test target is available.
 
-The configured test AVD is `Medium_Phone_API_37.0`. If `adb devices` reports it as `offline`, allow the emulator to finish booting, then run `adb kill-server`, `adb start-server`, and `adb devices` before retrying `gradlew.bat connectedDebugAndroidTest`. During Milestone 8, `emulator-5554` remained offline, so instrumentation tests, live recipe navigation, and screenshots could not be verified. The pure-Java matcher tests passed; manual verification should cover recipe filtering, detail navigation, persistence, and navigation once an online device is available.
+The configured test AVD is `Medium_Phone_API_37.0`. If `adb devices` reports it as `offline`, allow the emulator to finish booting, then run the SDK's `platform-tools\adb.exe kill-server`, `platform-tools\adb.exe start-server`, and `platform-tools\adb.exe devices` before retrying the instrumentation task. Do not wipe the AVD unless its data is intentionally disposable.
+
+## Milestone 9 verification
+
+On 19 October 2026, the existing AVD briefly reported `offline` after a non-destructive cold boot, then became stable as `emulator-5554 device` across repeated ADB checks. The debug APK installed and launched into `PantryActivity`. `build`, `test`, and `lint` succeeded, and `connectedDebugAndroidTest` completed successfully, including the SharedPreferences tests. The Settings switch was toggled on, the application was force-stopped and relaunched, and the switch remained enabled after reopening Settings.
+
+Genuine evidence screenshots were saved outside the source tree in `C:\Users\User\Documents\Codex\SmartPantryManager-evidence`. Full add/edit/delete and recipe workflow coverage still requires a broader dedicated live test pass; no unverified workflow is represented as passed here.
 
 ## Development approach
 
-Development is incremental. Each milestone will be reviewed and tested before it is committed. The repository history will document genuine completed work; changes will not be backdated or fabricated. Remaining work includes functional settings, expiry notifications, and any later assignment features outside the current milestone.
+Development is incremental. Each milestone will be reviewed and tested before it is committed. The repository history will document genuine completed work; changes will not be backdated or fabricated. Remaining work includes expiry warnings/notifications, final UI polish, and any later assignment features outside the current milestone.

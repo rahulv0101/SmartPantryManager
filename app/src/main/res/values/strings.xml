@@ -36,16 +36,12 @@
     <string name="recipe_not_found_message">This recipe is no longer available.</string>
     <string name="recipe_ingredients_unavailable">Ingredient requirements are unavailable.</string>
     <string name="recipe_ingredient_format">%1$s — %2$s %3$s</string>
-    <string name="open_recipe_details_placeholder">Open Recipe Details (placeholder)</string>
     <string name="recipe_details">Recipe Details</string>
-    <string name="no_recipe_selected">No recipe is selected yet.</string>
     <string name="ingredients">Ingredients</string>
-    <string name="recipe_ingredients_placeholder">Recipe ingredients will appear here once recipe data is added.</string>
     <string name="preparation_instructions">Preparation Instructions</string>
-    <string name="recipe_instructions_placeholder">Preparation instructions will appear here once recipes are added.</string>
     <string name="expiry_alerts">Expiry alerts</string>
-    <string name="expiry_alerts_placeholder">Available in a future milestone</string>
-    <string name="settings_placeholder_notice">Settings are placeholders until preferences are implemented.</string>
+    <string name="settings_description">Choose which saved app preferences are enabled.</string>
+    <string name="expiry_alerts_description">Save whether you want expiring-soon alerts enabled. Alert display and scheduling will be implemented in a later milestone.</string>
     <string-array name="unit_options">
         <item>@string/select_unit</item>
         <item>g</item>
